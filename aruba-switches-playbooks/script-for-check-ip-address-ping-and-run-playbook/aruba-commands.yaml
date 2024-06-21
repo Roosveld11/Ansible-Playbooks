@@ -1,0 +1,29 @@
+---
+
+- name: for aruba switches tasks
+  hosts: aruba
+  gather_facts: false
+  connection: local
+ 
+ #---You can vault the login and password in the aruba-login-password.yaml file
+  vars_files:
+    - aruba-login-password.yaml
+
+  collections:
+    - arubanetworks.aos_switch
+  
+  vars:
+    ansible_network_os: arubanetworks.aos_switch.arubaoss
+    ansible_connection: network_cli
+  
+  tasks:
+    - name: disable interface
+      arubaoss_command:
+#---Enter your commands. For example:
+        commands:
+          - conf t
+          - int 47
+          - disable
+          - end
+
+

@@ -1,0 +1,27 @@
+---
+
+- name: Set a name for the playbook
+
+#---Comment out the unnecessary parts
+#  hosts: cisco-test
+  hosts: cisco             
+
+  gather_facts: false
+  connection: local
+ 
+  vars_files:
+    - cisco-login-password.yaml
+
+  vars:
+    ansible_connection: ansible.netcommon.network_cli
+    ansible_network_os: cisco.ios.ios
+     
+  
+  tasks:
+  - name: Run multiple commands on remote nodes
+    cisco.ios.ios_command:
+      #---Enter your commands
+      commands:
+        - conf t
+        - end
+        - wr mem

@@ -1,0 +1,38 @@
+---
+
+- name: playbook for change timezone on aruba-switchs
+#---list of aruba switches from the "hosts" file
+  hosts: aruba
+  gather_facts: false
+  connection: local
+
+#---takes login&password from file
+  vars_files:
+    - aruba-login-password.yaml
+
+  collections:
+    - arubanetworks.aos_switch
+  
+  vars:
+    ansible_network_os: arubanetworks.aos_switch.arubaoss
+    ansible_connection: network_cli
+  
+
+  tasks:
+    - name: change timezone
+      arubaoss_command:
+        commands:
+          - conf t
+#---enter your timezone
+          - time timezone 300
+          - end
+          - save
+
+#---uncomment for check result
+#      register: command_output
+
+#    - name: Display result
+#      debug:
+#        msg: "{{ command_output.stdout_lines[-1][0].split('show run | i timezone')[1] }}"
+
+

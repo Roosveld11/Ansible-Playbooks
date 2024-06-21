@@ -1,0 +1,24 @@
+---
+- name: check OS version
+#---Comment out the unnecessary parts
+  hosts: mikrotik-switch           
+  #hosts: mikrotik
+  gather_facts: false
+  connection: local
+
+  vars_files:
+    - mikrotik-login-password.yaml 
+ 
+  vars:
+    ansible_connection: network_cli
+    ansible_network_os: routeros
+    ansible_ssh_port: 22 #---enter yours port
+ 
+  tasks:
+    - name: check OS version
+      routeros_command:
+      #---Enter yours commands
+        commands:
+          - system clock set time-zone-name=Asia/Almaty 
+
+

@@ -1,0 +1,27 @@
+---
+- name: Change timezone on Linux servers
+
+#---Comment out the unnecessary parts
+  #hosts: Asterisk
+  hosts: Asterisk-test
+
+  gather_facts: false
+  become: true
+  vars_files:
+    - linux-login-password.yaml
+
+  tasks:
+
+    - name: Set new timezone
+      shell: timedatectl set-timezone Asia/Almaty
+
+#---If you need to output the result to the terminal, uncomment it
+
+#    - name: Verify the changes
+#      shell: timedatectl show --property=Timezone --value
+#      register: timezone_output
+
+#    - name: Show the new timezone
+#      debug:
+#        msg: "New timezone is {{ timezone_output.stdout }}"
+

@@ -1,0 +1,92 @@
+---
+- name: Create a backup of the Asterisk configuration
+
+#---Comment out the unnecessary parts
+#  hosts: Asterisk
+  hosts: Asterisk-test
+
+  gather_facts: false
+  become: true
+  vars_files:
+    - linux-login-password.yaml
+
+  tasks:
+    - name: Create a directory for creating the script
+      shell: mkdir -p /enter-directory-name
+
+    - name: Create a script to backup Asterisk configuration files and copy them to an FTP server
+      copy:
+        content: |
+          # -*- coding: utf-8 -*-
+
+          import os
+          import ftplib
+          import socket
+
+          def get_local_hostname():
+              # Function to get the hostname of the local server
+              with open('/etc/hostname', 'r') as f:
+                  return f.readline().strip()
+
+          def main():
+              # FTP server credentials
+          #---Enter your values
+              ftp_server = 'ip-address'
+              ftp_username = 'login'
+              ftp_password = 'password'
+
+              # Connecting to the FTP server
+              ftp_connection = ftplib.FTP(ftp_server, ftp_username, ftp_password)
+
+              try:
+                  # Getting the name of the local server
+                  hostname = get_local_hostname()
+                  print("Local server name: {0}".format(hostname))
+
+                  # Preparing the path on the FTP server
+                  ftp_remote_dir = '/ASTERISK/{0}/'.format(hostname)
+                  try:
+                      ftp_connection.mkd(ftp_remote_dir)
+                  except ftplib.error_perm:
+                      pass  # Directory already exists
+
+                  # Change directory on the FTP server
+                  ftp_connection.cwd(ftp_remote_dir)
+
+                  # File paths for uploading
+                  local_file_paths = ["/etc/asterisk/sip.conf",
+                                      "/etc/asterisk/extensions.conf",
+                                      "/etc/iptables.sh"]
+
+                  # Loop for uploading each file to the FTP server
+                  for local_file_path in local_file_paths:
+                      with open(local_file_path, 'rb') as fh:
+                          # Upload file to FTP server
+                          ftp_connection.storbinary('STOR {0}'.format(os.path.basename(local_file_path)), fh)
+                          print("File {0} has been successfully uploaded to the FTP server".format(os.path.basename(local_file_path)))
+              except ftplib.error_perm as e:
+                  print("Error uploading file to FTP server: {0}".format(e))
+              except socket.timeout as e:
+                  print("Connection timed out while connecting to the FTP server: {0}".format(e))
+              finally:
+                  # Close the connection to the FTP server
+                  ftp_connection.quit()
+
+          if __name__ == "__main__":
+              main()
+        #---Change directory name
+        dest: /enter-directory-name/backup-script.py
+#      notify: Reload script
+
+    - name: Add a crontab job for the backup script
+      cron:
+        #---Enter your values
+        name: "Backup asterisk configuration"
+        minute: "0"
+        hour: "0"
+        day: "1"
+        month: "*/1"
+        weekday: "*"
+        #---Change directory name and Python version
+        job: "PATH=$PATH:/usr/local/bin/ /usr/bin/python-version /enter-directory-name/backup-script.py"
+
